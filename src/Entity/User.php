@@ -6,9 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="phonebook")
+ * @ORM\Table(name="users")
  */
-class Phonebook
+class User
 {
     /**
      * @ORM\Id
@@ -29,6 +29,12 @@ class Phonebook
      * @var string
      */
     private $lastName;
+
+    /**
+     * @ORM\Column(type="string")
+     * @var string
+     */
+    private $email;
 
     /**
      * @ORM\Column(type="string")
@@ -55,9 +61,10 @@ class Phonebook
     /**
      * @param string $firstName
      */
-    public function setFirstName(string $firstName): void
+    public function setFirstName(string $firstName): self
     {
         $this->firstName = $firstName;
+        return $this;
     }
 
     /**
@@ -71,9 +78,27 @@ class Phonebook
     /**
      * @param string $lastName
      */
-    public function setLastName(string $lastName): void
+    public function setLastName(string $lastName): self
     {
         $this->lastName = $lastName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     */
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+        return $this;
     }
 
     /**
@@ -87,9 +112,21 @@ class Phonebook
     /**
      * @param string $phone
      */
-    public function setPhone(string $phone): void
+    public function setPhone(string $phone): self
     {
         $this->phone = $phone;
+        return $this;
+    }
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'firstName' => $this->getFirstName(),
+            'lastName' => $this->getLastName(),
+            'email' => $this->getEmail(),
+            'phone' => $this->getPhone()
+        ];
     }
 
 

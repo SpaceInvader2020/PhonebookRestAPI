@@ -1,71 +1,39 @@
 <?php
 
-
 namespace App\Repository;
-
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Class PhonebookRepository
- * @package App\Repository
+ * @method User|null find($id, $lockMode = null, $lockVersion = null)
+ * @method User|null findOneBy(array $criteria, array $orderBy = null)
+ * @method User[]    findAll()
+ * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $manager;
-
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $manager)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
-        $this->manager = $manager;
     }
 
     /**
-     * @param $firstName
-     * @param $lastName
-     * @param $email
-     * @param $phone
+     * Used to upgrade (rehash) the user's password automatically over time.
      */
-    public function save($firstName, $lastName, $email, $phone)
+    public function upgradePassword(UserInterface $user, string $newEncodedPassword): void
     {
-        $newUser = new User();
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+        }
 
-        $newUser
-            ->setFirstName($firstName)
-            ->setLastName($lastName)
-            ->setEmail($email)
-            ->setPhone($phone);
-
-        $this->manager->persist($newUser);
-        $this->manager->flush();
-    }
-
-    /**
-     * @param User $user
-     * @return User
-     */
-    public function update(User $user)
-    {
-        $this->manager->persist($user);
-        $this->manager->flush();
-
-        return $user;
-    }
-
-    /**
-     * @param User $user
-     */
-    public function remove(User $user)
-    {
-        $this->manager->remove($user);
-        $this->manager->flush();
+        $user->setPassword($newEncodedPassword);
+        $this->_em->persist($user);
+        $this->_em->flush();
     }
 
 }
